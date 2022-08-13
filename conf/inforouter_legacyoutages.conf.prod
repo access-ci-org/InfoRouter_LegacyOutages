@@ -1,0 +1,9 @@
+{
+    "DESTINATION": "warehouse",
+    "SOURCE_URL": "https://operations.access-ci.org/api/infrastructure_news",
+    "AFFILIATIONS": ["ACCESS CI"],
+    "LOG_FILE": "/soft/warehouse-apps-1.0/inforouter_legacyoutages/var/inforouter_legacyoutages.log",
+    "LOG_LEVEL": "warning",
+    "RUN_DIR": "/soft/warehouse-apps-1.0/inforouter_legacyoutages/var",
+    "PID_FILE": "/soft/warehouse-apps-1.0/inforouter_legacyoutages/var/inforouter_legacyoutages.pid"
+}
