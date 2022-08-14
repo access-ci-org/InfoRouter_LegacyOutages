@@ -268,7 +268,7 @@ class Router():
                 type = 'Partial'
             else:
                 type = 'Reconfiguration'
-            for resource in p_res['affected_infrastructure_elements']:
+            for resource in p_res['affected_infrastructure']:
                 ID = 'urn:ogf:glue2:operations.access-ci.org:infrastructure_news:{}.{}'.format(p_res['outage_id'], resource['infra_resourceid'])
                 siteid = '.'.join(resource['infra_resourceid'].split('.')[1:])
                 try:
