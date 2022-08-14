@@ -4,8 +4,8 @@ After=network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=simple
-EnvironmentFile=/soft/warehouse-apps-1.0/inforouter_legacyoutages/PROD/sbin/inforouter_legacyoutages.sysconfig
-ExecStart=/soft/warehouse-apps-1.0/inforouter_legacyoutages/PROD/sbin/nforouter_legacyoutages.service.sh start
+EnvironmentFile=/soft/warehouse-apps-1.0/InfoRouter_LegacyOutages/PROD/sbin/inforouter_legacyoutages.sysconfig
+ExecStart=/soft/warehouse-apps-1.0/InfoRouter_LegacyOutages/PROD/sbin/inforouter_legacyoutages.service.sh start
 User=software
 Group=admin
 Restart=always

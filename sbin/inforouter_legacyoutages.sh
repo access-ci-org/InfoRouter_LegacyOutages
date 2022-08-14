@@ -12,7 +12,7 @@
 
 ####### Customizations START #######
 APP_NAME=inforouter_legacyoutages
-APP_BASE=/soft/warehouse-apps-1.0/inforouter_legacyoutages
+APP_BASE=/soft/warehouse-apps-1.0/InfoRouter_LegacyOutages
 WAREHOUSE_BASE=/soft/warehouse-1.0
 # Override in shell environment
 if [ -z "$PYTHON_BASE" ]; then
