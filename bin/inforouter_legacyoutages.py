@@ -3,7 +3,7 @@
 # InforRouter ACCESS Infrastructure News from URL to Legacy Outages Django Model
 #
 import argparse
-from datetime import datetime, tzinfo, timedelta
+from datetime import datetime, timezone, tzinfo, timedelta
 import http.client as httplib
 import json
 import logging
@@ -19,6 +19,9 @@ import ssl
 from time import sleep
 import traceback
 from urllib.parse import urlparse
+import pytz
+Central_TZ = pytz.timezone('US/Central')
+UTC_TZ = pytz.timezone('UTC')
 
 import django
 django.setup()
@@ -29,15 +32,6 @@ from outages.models import *
 from processing_status.process import ProcessingActivity
 
 import pdb
-
-class UTC(tzinfo):
-    def utcoffset(self, dt):
-        return timedelta(0)
-    def tzname(self, dt):
-        return 'UTC'
-    def dst(self, dt):
-        return timedelta(0)
-utc = UTC()
 
 # Used during initialization before loggin is enabled
 def eprint(*args, **kwargs):
@@ -86,7 +80,7 @@ class Router():
             name = os.path.basename(__file__).replace('.py', '')
             self.pidfile_path = '/var/run/{}/{}.pid'.format(name, name)
 
-    def Setup(self):
+    def Setup(self, peek_sleep=10, offpeek_sleep=60, max_stale=24 * 60):
         # Initialize log level from arguments, or config file, or default to WARNING
         loglevel_str = (self.args.log or self.config.get('LOG_LEVEL', 'WARNING')).upper()
         loglevel_num = getattr(logging, loglevel_str, None)
@@ -118,16 +112,9 @@ class Router():
         for var in ['uri', 'scheme', 'path', 'display']: # Where <full> contains <type>:<obj>
             self.src[var] = None
             self.dest[var] = None
-        self.peak_sleep = 10 * 60        # 10 minutes in seconds during peak business hours
-        self.off_sleep = 60 * 60         # 60 minutes in seconds during off hours
-        self.max_stale = 24 * 60 * 60    # 24 hours in seconds force refresh
-        # These attributes have their own database column
-        # Some fields exist in both parent and sub-resources, while others only in one
-        # Those in one will be left empty in the other, or inherit from the parent
-        self.have_column = ['resource_id', 'info_resourceid',
-                            'resource_descriptive_name', 'resource_description',
-                            'project_affiliation', 'provider_level',
-                            'resource_status', 'current_statuses', 'updated_at']
+        self.peak_sleep = peek_sleep * 60       # 10 minutes in seconds during peak business hours
+        self.offpeek_sleep = offpeek_sleep * 60 # 60 minutes in seconds during off hours
+        self.max_stale = max_stale * 60         # 24 hours in seconds force refresh
         default_file = 'file:./outages.json'
 
         # Verify arguments and parse compound arguments
@@ -318,31 +305,14 @@ class Router():
         return(True, '')
             
     def smart_sleep(self, last_run):
-        # This functions sleeps, performs refresh checks, and returns when it's time to refresh
-        while True:
-            if 12 <= datetime.now(utc).hour <= 24: # Between 6 AM and 6 PM Central (~12 to 24 UTC)
-                current_sleep = self.peak_sleep
-            else:
-                current_sleep = self.off_sleep
-            self.logger.debug('sleep({})'.format(current_sleep))
-            sleep(current_sleep)
-
-            # Force a refresh every 12 hours at Noon and Midnight UTC
-            now_utc = datetime.now(utc)
-            if ( (now_utc.hour < 12 and last_run.hour > 12) or \
-                (now_utc.hour > 12 and last_run.hour < 12) ):
-                self.logger.info('REFRESH TRIGGER: Every 12 hours')
-                return
-
-            # Force a refresh every max_stale seconds
-            since_last_run = now_utc - last_run
-            if since_last_run.seconds > self.max_stale:
-                self.logger.info('REFRESH TRIGGER: Stale {}/seconds above thresdhold of {}/seconds'.format(since_last_run.seconds, self.max_stale) )
-                return
+        # Between 6 AM and 9 PM Central
+        current_sleep = self.peak_sleep if 6 <= datetime.now(Central_TZ).hour <= 21 else self.offpeak_sleep
+        self.logger.debug('sleep({})'.format(current_sleep))
+        sleep(current_sleep)
 
     def Run(self):
         while True:
-            self.start = datetime.now(utc)
+            self.start = datetime.now(timezone.utc)
             self.stats = {
                 'Update': 0,
                 'Delete': 0,
@@ -368,7 +338,7 @@ class Router():
                     pa = ProcessingActivity(pa_application, pa_function, pa_id , pa_topic, pa_about)
                     (rc, warehouse_msg) = self.Warehouse_LegacyOutages(SOURCE_DATA)
                 
-                self.end = datetime.now(utc)
+                self.end = datetime.now(timezone.utc)
                 summary_msg = 'Processed in {:.3f}/seconds: {}/updates, {}/deletes, {}/skipped'.format((self.end - self.start).total_seconds(), self.stats['Update'], self.stats['Delete'], self.stats['Skip'])
                 self.logger.info(summary_msg)
                 if self.dest['scheme'] == 'warehouse':
