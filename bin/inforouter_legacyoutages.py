@@ -271,38 +271,39 @@ class Router():
     def Warehouse_LegacyOutages(self, input_obj):
         self.cur = {}   # Resources currently in database
         self.new = {}   # New resources in document
-        for item in Outages.objects.filter(ID__startswith='urn:ogf:glue2:operations.access-ci.org:infrastructure_news:'))
+        for item in Outages.objects.filter(ID__startswith='urn:ogf:glue2:operations.access-ci.org:infrastructure_news:'):
             self.cur[item.ID] = item
 
         for p_res in input_obj:
-            if p_res['type'] = 'Outage Full':
+            if p_res['type'] == 'Outage Full':
                 type = 'Full'
-            elsif p_res['type'] = 'Outage Partial':
+            elif p_res['type'] == 'Outage Partial':
                 type = 'Partial'
             else:
                 type = 'Reconfiguration'
             for resource in p_res['affected_infrastructure_elements']:
+                ID = 'urn:ogf:glue2:operations.access-ci.org:infrastructure_news:{}.{}'.format(p_res['outage_id'], resource['resourceid'])
                 siteid = '.'.join(resource['resourceid'].split('.')[1:])
                 try:
-                    model, created = Outagers.objects.update_or_create(
-                                        ID=p_res['ID'],
+                    model, created = Outages.objects.update_or_create(
+                                        ID=ID,
                                         defaults = {
                                             'OutageID': p_res['outage_id'],
                                             'ResourceID': resource['resourceid'],
                                             'WebURL': p_res['web_url'],
                                             'Subject': p_res['subject'],
-                                            'Content': p_res['content
+                                            'Content': p_res['content'],
                                             'OutageStart': p_res['start_timestamp'],
                                             'OutageEnd': p_res['end_timestamp'],
                                             'SiteID': siteid,
                                             'OutageType': type
                                         })
                     model.save()
-                    self.logger.debug('Base ID={}, ResourceID={}'.format(p_res['ID'], p_res['info_resourceid']))
-                    self.new[p_res['ID']]=model
+                    self.logger.debug('ID={}'.format(ID))
+                    self.new[ID]=model
                     self.stats['Update'] += 1
                 except (DataError, IntegrityError) as e:
-                    msg = '{} saving resource_id={} ({}): {}'.format(type(e).__name__, p_res['resource_id'], p_res['info_resourceid'], e.message)
+                    msg = '{} saving ID={} ({}): {}'.format(type(e).__name__, ID, e.message)
                     self.logger.error(msg)
                     return(False, msg)
 
