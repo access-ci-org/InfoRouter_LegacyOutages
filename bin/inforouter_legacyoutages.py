@@ -269,14 +269,14 @@ class Router():
             else:
                 type = 'Reconfiguration'
             for resource in p_res['affected_infrastructure_elements']:
-                ID = 'urn:ogf:glue2:operations.access-ci.org:infrastructure_news:{}.{}'.format(p_res['outage_id'], resource['resourceid'])
-                siteid = '.'.join(resource['resourceid'].split('.')[1:])
+                ID = 'urn:ogf:glue2:operations.access-ci.org:infrastructure_news:{}.{}'.format(p_res['outage_id'], resource['infra_resourceid'])
+                siteid = '.'.join(resource['infra_resourceid'].split('.')[1:])
                 try:
                     model, created = Outages.objects.update_or_create(
                                         ID=ID,
                                         defaults = {
                                             'OutageID': p_res['outage_id'],
-                                            'ResourceID': resource['resourceid'],
+                                            'ResourceID': resource['infra_resourceid'],
                                             'WebURL': p_res['web_url'],
                                             'Subject': p_res['subject'],
                                             'Content': p_res['content'],
