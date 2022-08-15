@@ -113,7 +113,7 @@ class Router():
             self.src[var] = None
             self.dest[var] = None
         self.peak_sleep = peek_sleep * 60       # 10 minutes in seconds during peak business hours
-        self.offpeek_sleep = offpeek_sleep * 60 # 60 minutes in seconds during off hours
+        self.offpeak_sleep = offpeek_sleep * 60 # 60 minutes in seconds during off hours
         self.max_stale = max_stale * 60         # 24 hours in seconds force refresh
         default_file = 'file:./outages.json'
 
