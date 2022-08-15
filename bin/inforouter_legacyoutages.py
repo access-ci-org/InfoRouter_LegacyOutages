@@ -80,7 +80,7 @@ class Router():
             name = os.path.basename(__file__).replace('.py', '')
             self.pidfile_path = '/var/run/{}/{}.pid'.format(name, name)
 
-    def Setup(self, peek_sleep=10, offpeek_sleep=60, max_stale=24 * 60):
+    def Setup(self, peak_sleep=10, offpeak_sleep=60, max_stale=24 * 60):
         # Initialize log level from arguments, or config file, or default to WARNING
         loglevel_str = (self.args.log or self.config.get('LOG_LEVEL', 'WARNING')).upper()
         loglevel_num = getattr(logging, loglevel_str, None)
@@ -112,8 +112,8 @@ class Router():
         for var in ['uri', 'scheme', 'path', 'display']: # Where <full> contains <type>:<obj>
             self.src[var] = None
             self.dest[var] = None
-        self.peak_sleep = peek_sleep * 60       # 10 minutes in seconds during peak business hours
-        self.offpeak_sleep = offpeek_sleep * 60 # 60 minutes in seconds during off hours
+        self.peak_sleep = peak_sleep * 60       # 10 minutes in seconds during peak business hours
+        self.offpeak_sleep = offpeak_sleep * 60 # 60 minutes in seconds during off hours
         self.max_stale = max_stale * 60         # 24 hours in seconds force refresh
         default_file = 'file:./outages.json'
 
