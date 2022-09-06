@@ -4,6 +4,7 @@
 #
 import argparse
 from datetime import datetime, timezone, tzinfo, timedelta
+from django.utils.dateparse import parse_datetime
 import http.client as httplib
 import json
 import logging
@@ -280,8 +281,8 @@ class Router():
                                             'WebURL': p_res['web_url'],
                                             'Subject': p_res['subject'],
                                             'Content': p_res['content'],
-                                            'OutageStart': p_res['start_timestamp'],
-                                            'OutageEnd': p_res['end_timestamp'],
+                                            'OutageStart': parse_datetime(p_res['start_timestamp']),
+                                            'OutageEnd': parse_datetime(p_res['end_timestamp']),
                                             'SiteID': siteid,
                                             'OutageType': type
                                         })

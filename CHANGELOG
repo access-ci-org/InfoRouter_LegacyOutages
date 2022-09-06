@@ -1,2 +1,5 @@
-tag-1.0-20200812 JP
+tag-1.0.1 20220906 JP
+  - Fix parse OutageStart, OutageEnd
+
+tag-1.0.0 20220812 JP
   - Initial Implementation
